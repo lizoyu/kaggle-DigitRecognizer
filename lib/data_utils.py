@@ -74,15 +74,49 @@ def get_MNIST_data(num_training=41000, num_validation=1000, num_test=1000, subtr
 
     return datadict
 
-def load_model(filename):
+def create_submission(model, test_path, save_path):
     """
-    load the TensorFlow model
+    use Keras trained model to create submission for Kaggle competition
+
+    Inputs:
+        - model: trained Keras model
+        - test_path: the path to the test data
+        - save_path: the path to save the submission with file name
     """
-    pass
+    X_test = []
+    with open(test_path, 'rt') as csvfile:
+        fileToRead = csv.reader(csvfile)
+
+        # skip the header
+        headers = next(fileToRead)
+
+        for x in fileToRead:
+            X_test.append(x)
+
+    predictions = model.predict(np.array(X_test, dtype=np.float32))
+    with open(save_path, 'rt') as csvfile:
+        fileToWrite = csv.writer(out, delimiter=',', lineterminator='\n')
+
+        # write the header
+        fileToWrite.writerow(['ImageID', 'Label'])
+        # write the predictions
+        i = 0
+        for row in fileToWrite:
+            fileToWrite.writerow([i+1, predictions[i]])
+            i += 1
 
 # test functions
 '''
 def tester():
-    datadict = get_MNIST_data()
-    print(datadict['X_train'].shape)
+    with open('../data/test.csv', 'rt') as csvfile:
+        fileToRead = csv.reader(csvfile)
+
+        # skip the header
+        headers = next(fileToRead)
+
+        img = np.array(next(fileToRead), dtype=np.int).reshape((28,28))
+        from matplotlib.pyplot import imshow, show
+        imshow(img)
+        show()
+tester()
 '''

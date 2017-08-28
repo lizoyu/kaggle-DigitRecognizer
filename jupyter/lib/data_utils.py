@@ -24,7 +24,7 @@ def load_MNIST(filename):
 
         return data
 
-def get_MNIST_data(num_training=41000, num_validation=1000, num_test=1000, subtract_mean=True):
+def get_MNIST_data(num_training=41000, num_validation=1000, num_test=1000, subtract_mean=True, fit=False):
     """
     Load the MNIST dataset(42,000 in total) from disk and perform preprocessing to prepare
     it for classifiers.
@@ -54,6 +54,27 @@ def get_MNIST_data(num_training=41000, num_validation=1000, num_test=1000, subtr
         X_test = mnist_data[num_training:num_training+num_test,1:].reshape((-1,28,28,1))
         y_test = mnist_data[num_training:num_training+num_test,0]
 
+    # extra preprocess if to fit the pretrained model
+    if fit:
+        from scipy.misc import imresize
+        new_X = np.zeros((num_training,24,24,3))
+        for i in range(num_training):
+            new_X[i,:,:,0] = imresize(X_train[i,:,:,0], (24, 24))
+            new_X[i,:,:,1] = new_X[i,:,:,0]
+            new_X[i,:,:,2] = new_X[i,:,:,0]
+        X_train = new_X.copy()
+
+        if num_validation:
+            X_val = X_train[:num_validation]
+
+        if num_test:
+            new_X = np.zeros((num_test,24,24,3))
+            for i in range(num_test):
+                new_X[i,:,:,0] = imresize(X_train[i,:,:,0], (24, 24))
+                new_X[i,:,:,1] = new_X[i,:,:,0]
+                new_X[i,:,:,2] = new_X[i,:,:,0]
+            X_test = new_X.copy()
+
     # normalize the data: subtract the mean from images
     if subtract_mean:
         mean_img = np.mean(X_train, axis=0)
@@ -74,16 +95,42 @@ def get_MNIST_data(num_training=41000, num_validation=1000, num_test=1000, subtr
 
     return datadict
 
-def load_model(filename):
+def create_submission(model, test_path, save_path, batch_size=32):
     """
-    load the TensorFlow model
+    use Keras trained model to create submission for Kaggle competition
+
+    Inputs:
+        - model: trained Keras model
+        - test_path: the path to the test data
+        - save_path: the path to save the submission with file name
     """
-    pass
+    X_test = []
+    with open(test_path, 'rt') as csvfile:
+        fileToRead = csv.reader(csvfile)
+
+        # skip the header
+        headers = next(fileToRead)
+
+        for x in fileToRead:
+            X_test.append(x)
+
+    predictions = np.argmax(model.predict(
+                    np.array(X_test, dtype=np.float32).reshape((-1,28,28,1)), verbose=1, batch_size=batch_size), axis=1)
+    with open(save_path, 'wt') as csvfile:
+        fileToWrite = csv.writer(csvfile, delimiter=',', lineterminator='\n')
+
+        # write the header
+        fileToWrite.writerow(['ImageID', 'Label'])
+        # write the predictions
+        for i in range(len(predictions)):
+            fileToWrite.writerow([i+1, predictions[i]])
 
 # test functions
-'''
+
 def tester():
-    datadict = get_MNIST_data()
-    print(datadict['X_train'].shape)
-'''
-#tester()
+    data = get_MNIST_data(fit=True)
+    #print('image size: ', data['X_train'].shape)
+    #from matplotlib.pyplot import imshow, show
+    #imshow(data['X_train'][0])
+    #show()
+tester()
