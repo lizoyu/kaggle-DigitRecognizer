@@ -56,10 +56,9 @@ def get_MNIST_data(num_training=41000, num_validation=1000, num_test=1000, subtr
 
     # extra preprocess if to fit the pretrained model
     if fit:
-        from scipy.misc import imresize
-        new_X = np.zeros((num_training,24,24,3))
+        new_X = np.zeros((num_training,28,28,3))
         for i in range(num_training):
-            new_X[i,:,:,0] = imresize(X_train[i,:,:,0], (24, 24))
+            new_X[i,:,:,0] = X_train[i,:,:,0]
             new_X[i,:,:,1] = new_X[i,:,:,0]
             new_X[i,:,:,2] = new_X[i,:,:,0]
         X_train = new_X.copy()
@@ -68,9 +67,9 @@ def get_MNIST_data(num_training=41000, num_validation=1000, num_test=1000, subtr
             X_val = X_train[:num_validation]
 
         if num_test:
-            new_X = np.zeros((num_test,24,24,3))
+            new_X = np.zeros((num_test,28,28,3))
             for i in range(num_test):
-                new_X[i,:,:,0] = imresize(X_train[i,:,:,0], (24, 24))
+                new_X[i,:,:,0] = X_test[i,:,:,0]
                 new_X[i,:,:,1] = new_X[i,:,:,0]
                 new_X[i,:,:,2] = new_X[i,:,:,0]
             X_test = new_X.copy()
