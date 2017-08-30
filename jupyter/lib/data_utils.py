@@ -94,7 +94,7 @@ def get_MNIST_data(num_training=41000, num_validation=1000, num_test=1000, subtr
 
     return datadict
 
-def create_submission(model, test_path, save_path, batch_size=32):
+def create_submission(model, test_path, save_path, batch_size=32, fit=False):
     """
     use Keras trained model to create submission for Kaggle competition
 
@@ -102,6 +102,7 @@ def create_submission(model, test_path, save_path, batch_size=32):
         - model: trained Keras model
         - test_path: the path to the test data
         - save_path: the path to save the submission with file name
+        - fit: transform the test data to fit the model
     """
     X_test = []
     with open(test_path, 'rt') as csvfile:
@@ -113,8 +114,16 @@ def create_submission(model, test_path, save_path, batch_size=32):
         for x in fileToRead:
             X_test.append(x)
 
-    predictions = np.argmax(model.predict(
-                    np.array(X_test, dtype=np.float32).reshape((-1,28,28,1)), verbose=1, batch_size=batch_size), axis=1)
+    X_test = np.array(X_test, dtype=np.float32).reshape((-1,28,28,1))
+    if fit:
+        new_X = np.zeros((X_test.shape[0],28,28,3))
+        for i in range(X_test.shape[0]):
+            new_X[i,:,:,0] = X_test[i,:,:,0]
+            new_X[i,:,:,1] = new_X[i,:,:,0]
+            new_X[i,:,:,2] = new_X[i,:,:,0]
+        X_test = new_X.copy()
+
+    predictions = np.argmax(model.predict(X_test, verbose=1, batch_size=batch_size), axis=1)
     with open(save_path, 'wt') as csvfile:
         fileToWrite = csv.writer(csvfile, delimiter=',', lineterminator='\n')
 
