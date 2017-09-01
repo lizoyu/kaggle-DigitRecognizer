@@ -16,7 +16,7 @@ The following are several methods used in this competition.
 
 ### Traditional methods
 
-It can be divided into three modules: preprocessing, feature extraction, machine learning.
+It can be divided into three modules: preprocessing, feature extraction, classification
 
 #### preprocessing
 
@@ -27,7 +27,7 @@ It can be divided into three modules: preprocessing, feature extraction, machine
 - SIFT, SURF, ORB
 - HOG
 
-#### machine learning
+#### classification
 
 - regression tree
 - k-nearest neighbor, kernel regression
