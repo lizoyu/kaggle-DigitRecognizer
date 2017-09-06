@@ -94,7 +94,7 @@ def get_MNIST_data(num_training=41000, num_validation=1000, num_test=1000, subtr
 
     return datadict
 
-def create_submission(model, test_path, save_path, batch_size=32, fit=False):
+def create_submission(model, test_path, save_path, batch_size=32, subtract_mean=True, fit=False):
     """
     use Keras trained model to create submission for Kaggle competition
 
@@ -104,6 +104,7 @@ def create_submission(model, test_path, save_path, batch_size=32, fit=False):
         - save_path: the path to save the submission with file name
         - fit: transform the test data to fit the model
     """
+    # open the test file
     X_test = []
     with open(test_path, 'rt') as csvfile:
         fileToRead = csv.reader(csvfile)
@@ -115,6 +116,8 @@ def create_submission(model, test_path, save_path, batch_size=32, fit=False):
             X_test.append(x)
 
     X_test = np.array(X_test, dtype=np.float32).reshape((-1,28,28,1))
+
+    # transform the data to fit the model
     if fit:
         new_X = np.zeros((X_test.shape[0],28,28,3))
         for i in range(X_test.shape[0]):
@@ -123,6 +126,12 @@ def create_submission(model, test_path, save_path, batch_size=32, fit=False):
             new_X[i,:,:,2] = new_X[i,:,:,0]
         X_test = new_X.copy()
 
+    # normalize the data by mean subtraction
+    if subtract_mean:
+        mean_img = np.mean(X_test, axis=0)
+        X_test -= mean_img
+
+    # predict and save
     predictions = np.argmax(model.predict(X_test, verbose=1, batch_size=batch_size), axis=1)
     with open(save_path, 'wt') as csvfile:
         fileToWrite = csv.writer(csvfile, delimiter=',', lineterminator='\n')
@@ -132,13 +141,3 @@ def create_submission(model, test_path, save_path, batch_size=32, fit=False):
         # write the predictions
         for i in range(len(predictions)):
             fileToWrite.writerow([i+1, predictions[i]])
-
-# test functions
-
-def tester():
-    data = get_MNIST_data(fit=True)
-    #print('image size: ', data['X_train'].shape)
-    #from matplotlib.pyplot import imshow, show
-    #imshow(data['X_train'][0])
-    #show()
-tester()
