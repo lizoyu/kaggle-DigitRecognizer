@@ -13,8 +13,9 @@ The following are several methods used in this competition.
 (all data are centered for deep learning)
 
 #### To-do list
-- data-augmented inference
-- autoencoder pretraining
+- advanced experiments
+	- data-augmented inference
+	- relationship between pretraining, ReLU, dropout and batchnorm
 
 ### Traditional methods
 

@@ -1,3 +1,4 @@
 *.pyc
 **/.ipynb_checkpoints/**
 *.h5
+requirements.txt
